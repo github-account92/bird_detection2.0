@@ -3,7 +3,7 @@ import os
 
 import librosa
 
-from data_processing import make_labeled_iterator, make_unlabeled_iterator
+from data_utils import make_labeled_iterator, make_unlabeled_iterator
 
 
 def dataset_stats(iterator, filter_length):
