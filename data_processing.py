@@ -38,6 +38,7 @@ def make_tfrecords(iterator, out_path, prop_train=0.85, dev_inds=None,
                         out_path + "_dev.tfrecords") as dev_writer:
         for ind, (filename, label) in enumerate(iterator):
             seq, _ = librosa.load(filename, sr=resample_rate)
+            # TODO this will break with resampling
             if len(seq) > 600000 or len(seq) < 120000:
                 continue
             if transform == "mel":
@@ -75,7 +76,7 @@ def make_labeled_iterator(base_path, sets, n_max=0):
     
     Returns: 
         Iterator over len(sets)*n_max many files (or all files if n_max not 
-        given).
+        given) with their labels (tuples).
     """
     maps = [extract_labels(base_path, dataset) for dataset in sets]
     if n_max:
@@ -104,6 +105,19 @@ def extract_labels(base_path, dataset):
                 base_path, dataset, filename + ".wav"),
                               int(label)))
     return label_map
+
+
+def make_unlabeled_iterator(wav_dir):
+    """Make an iterator for the test set with "dummy" labels.
+
+    Parameters:
+        wav_dir: Directory containing the .wav folders
+
+    Returns:
+        Iterator over all files in the directory, with dummy labels (tuples).
+    """
+    return zip([os.path.join(wav_dir, file) for file in os.listdir(wav_dir)],
+               itertools.repeat(-1))
 
 
 if __name__ == "__main__":
