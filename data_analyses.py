@@ -39,7 +39,7 @@ def dataset_stats(iterator, filter_length):
     print("Total: {} Positive: {} Average: {}".format(total_seqs, total_pos,
                                                       total_pos/total_seqs))
     print("Total length: Seconds: {} Minutes {}: Hours: {}".format(
-        total_length, total_length/60, total_length/360))
+        total_length, total_length/60, total_length/3600))
     print("Longest sequence: {} Shortest: {}".format(max_length, min_length))
     print("Skipped {} too long sequences and {} too short ones".format(
         too_long, too_short))
@@ -56,15 +56,15 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print("\nStats for both training sets...")
-    ITER = make_labeled_iterator(args.data_path, ["freefield", "warblr"], n_max=100)
+    ITER = make_labeled_iterator(args.data_path, ["freefield", "warblr"])
     dataset_stats(ITER, filter_length=args.filter)
 
     print("\nStats for freefield training set...")
-    ITER = make_labeled_iterator(args.data_path, ["freefield"], n_max=100)
+    ITER = make_labeled_iterator(args.data_path, ["freefield"])
     dataset_stats(ITER, filter_length=args.filter)
 
     print("\nStats for warblr training set...")
-    ITER = make_labeled_iterator(args.data_path, ["warblr"], n_max=100)
+    ITER = make_labeled_iterator(args.data_path, ["warblr"])
     dataset_stats(ITER, filter_length=args.filter)
 
     print("\nStats for test set...")
