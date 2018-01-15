@@ -1,0 +1,10 @@
+tfr_path,/datasets/bird_detection/new/original
+data_dir,/datasets/bird_detection
+datasets,freefield,warblr
+data_type,mel
+window_size,5000
+hop_length,1250
+mel_freqs,128
+dev_inds,/datasets/bird_detection/new/dev_inds.npy
+n_max,0
+n_augment,50000
