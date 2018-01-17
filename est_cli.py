@@ -59,11 +59,11 @@ parser.add_argument("-R", "--reg",
                     help="Regularizer coefficient. Default: 0 (no "
                          "regularization). Currently does nothing!!")
 parser.add_argument("-S", "--steps",
-                    help="Number of training/eval steps to take. Give as "
+                    type=int,
+                    default=50000,
+                    help="Number of training steps to take. Give as "
                          "comma-separated values, e.g. 20000,1000. Default: "
-                         "20000 training steps, with evaluation every 1000 "
-                         "steps. Frequent evaluation slows down the process. "
-                         "Ignored if doing prediction or evaluation.")
+                         "50000. Ignored if doing prediction or evaluation.")
 parser.add_argument("-V", "--vis",
                     type=int,
                     default=100,
@@ -77,14 +77,11 @@ parser.add_argument("-V", "--vis",
                          "steps. This may result in faster execution.")
 args = parser.parse_args()
 
-steps_train, steps_eval = args.steps.split(",")
-steps_train = int(steps_train)
-steps_eval = int(steps_eval)
 
 out = run_birds(mode=args.mode, data_config=args.data_config,
                 model_config=args.model_config, model_dir=args.model_dir,
                 act=args.act, batchnorm=args.batchnorm,
                 adam_params=args.adam_params, augment=args.augment,
                 batch_size=args.batch_size, clipping=args.clipping,
-                data_format=args.data_format, reg=args.reg,
-                steps_train=steps_train, steps_eval=steps_eval, vis=args.vis)
+                data_format=args.data_format, reg=args.reg, steps=args.steps,
+                vis=args.vis)

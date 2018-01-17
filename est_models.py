@@ -28,7 +28,7 @@ def model_fn(features, labels, mode, params, config):
                  per time and if so how often.
             reg: Float, coefficient for regularizer for conv layers. 0 disables
                  it.
-            config: RunConfig object passed through from Estimator.
+        config: RunConfig object passed through from Estimator.
 
     Returns:
         An EstimatorSpec to be used in tf.estimator.
@@ -152,7 +152,7 @@ def read_apply_model_config(config_path, inputs, act, batchnorm, train,
         w_f: Size of filters.
         s_f: Convolutional stride of the layer/block.
     ALTERNATIVELY:
-    pool,w_p,s_p for pooling, with size and stride
+    pool,1,w_p,s_p for pooling, with size (w) and stride (s)
 
     NOTE: This is for 2D convolutional models.
           The final layer should *not* be included since it's always the same
@@ -212,7 +212,7 @@ def read_apply_model_config(config_path, inputs, act, batchnorm, train,
 
 
 def conv_layer(inputs, n_filters, size_filters, stride_filters, act,
-               batchnorm, train, data_format, vis, name, reg=0.):
+               batchnorm, train, data_format, vis, name, reg):
     """Build and apply a 2D convolutional layer.
 
     Parameters:
@@ -230,7 +230,7 @@ def conv_layer(inputs, n_filters, size_filters, stride_filters, act,
                      assumes that it's last.
         vis: Bool, whether to add a histogram for layer activations.
         name: Name of the layer (used for variable scope and summary).
-        reg: Coefficient for the regularizer.
+        reg: Coefficient for regularizer; currently unused.
 
     Returns:
         Output of the layer and number of parameters.

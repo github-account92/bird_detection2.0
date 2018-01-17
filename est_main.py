@@ -8,7 +8,7 @@ from est_models import model_fn
 def run_birds(mode, data_config, model_config, model_dir,
               act, batchnorm,
               adam_params, augment, batch_size, clipping, data_format, reg,
-              steps_train, steps_eval, vis):
+              steps, vis):
     """
     All of these parameters can be passed from est_cli. Please check
     that one for docs on what they are.
@@ -58,9 +58,6 @@ def run_birds(mode, data_config, model_config, model_dir,
     if mode == "return":
         return estimator
 
-    def eval_input_fn(): return input_fn(
-        tfr_path, "dev", freqs=freqs, batch_size=batch_size, augment=False)
-
     if mode == "train":
         def train_input_fn(): return input_fn(
             tfr_path, "train", freqs=freqs, batch_size=batch_size,
@@ -70,15 +67,16 @@ def run_birds(mode, data_config, model_config, model_dir,
             {"eval/accuracy": "eval/batch_accuracy"},
             every_n_iter=vis,
             at_end=True)
-        steps_taken = 0
-        while steps_taken < steps_train:
-            estimator.train(input_fn=train_input_fn, steps=steps_eval,
-                            hooks=[logging_hook])
-            steps_taken += steps_eval
-            estimator.evaluate(input_fn=eval_input_fn)
+        estimator.train(input_fn=train_input_fn, steps=steps,
+                        hooks=[logging_hook])
 
     elif mode == "eval":
-        eval_results = estimator.evaluate(input_fn=input_fn)
+        def eval_input_fn():
+            return input_fn(
+                tfr_path, "dev", freqs=freqs, batch_size=batch_size,
+                augment=False)
+
+        eval_results = estimator.evaluate(input_fn=eval_input_fn)
         print("Evaluation results:\n", eval_results)
         return
 
