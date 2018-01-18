@@ -85,7 +85,7 @@ def run_birds(mode, data_config, model_config, model_dir,
             print("Evaluating checkpoint {}...".format(ckpt))
             eval_results = estimator.evaluate(input_fn=eval_input_fn)
             print("Evaluation results:\n", eval_results)
-            return
+        return
 
     else:
         print("Mode unknown. Doing nothing...")
