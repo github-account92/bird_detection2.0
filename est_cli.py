@@ -61,9 +61,8 @@ parser.add_argument("-R", "--reg",
 parser.add_argument("-S", "--steps",
                     type=int,
                     default=50000,
-                    help="Number of training steps to take. Give as "
-                         "comma-separated values, e.g. 20000,1000. Default: "
-                         "50000. Ignored if doing prediction or evaluation.")
+                    help="Number of training steps to take. Default: 50000. "
+                         "Ignored if doing prediction or evaluation.")
 parser.add_argument("-V", "--vis",
                     type=int,
                     default=100,

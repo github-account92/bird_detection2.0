@@ -51,6 +51,8 @@ def run_birds(mode, data_config, model_config, model_dir,
     # we also disable the default SummarySaverHook IF profiling is requested
     config = tf.estimator.RunConfig(keep_checkpoint_every_n_hours=1,
                                     save_summary_steps=vis or 100,
+                                    save_checkpoints_steps=500,
+                                    keep_checkpoint_max=100,
                                     model_dir=model_dir)
     estimator = tf.estimator.Estimator(model_fn=model_fn,
                                        params=params,

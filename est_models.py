@@ -116,9 +116,9 @@ def model_fn(features, labels, mode, params, config):
     # if we make it here, we're in evaluation mode
     with tf.variable_scope("eval", reuse=True):
         eval_metric_ops = {"eval/accuracy": tf.metrics.accuracy(
-            labels=labels,
-            predictions=predictions["classes"],
-            name="accuracy"),
+                               labels=labels,
+                               predictions=predictions["classes"],
+                               name="accuracy"),
                            "eval/precision": tf.metrics.precision(
                                labels=labels,
                                predictions=predictions["classes"],

@@ -31,6 +31,7 @@ def input_fn(data_path, subset, batch_size, freqs, augment):
     data = data.padded_batch(batch_size, ((1, freqs, -1), (1,)))
     if subset == "train":
         data = data.repeat()
+    data = data.prefetch(4)
     iterator = data.make_one_shot_iterator()
     return iterator.get_next()
 
