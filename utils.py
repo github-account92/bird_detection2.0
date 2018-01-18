@@ -49,3 +49,24 @@ def img_grid(imgs, rows, cols):
                    elem in pair][:-1]
     grid = tf.concat(interleaved, axis=1)
     return grid
+
+
+def checkpoint_iterator(ckpt_path):
+    # we store the original text to re-write it
+    with open(ckpt_path) as ckpt_file:
+        next(ckpt_file)
+        orig = ckpt_file.read()
+
+    # get all the checkpoints
+    ckpts = []
+    with open(ckpt_path) as ckpt_file:
+        next(ckpt_file)
+        for line in ckpt_file:
+            ckpts.append(line.split()[1])
+
+    # fill them in one-by-one and leave
+    for ckpt in ckpts:
+        with open(ckpt_path, mode="w") as ckpt_file:
+            ckpt_file.write("model_checkpoint_path: " + ckpt + "\n")
+            ckpt_file.write(orig)
+        yield ckpt

@@ -1,8 +1,11 @@
+import os
+
 import tensorflow as tf
 
 from data_utils import read_data_config
 from est_input import input_fn
 from est_models import model_fn
+from utils import checkpoint_iterator
 
 
 def run_birds(mode, data_config, model_config, model_dir,
@@ -78,9 +81,11 @@ def run_birds(mode, data_config, model_config, model_dir,
                 tfr_path, "dev", freqs=freqs, batch_size=batch_size,
                 augment=False)
 
-        eval_results = estimator.evaluate(input_fn=eval_input_fn)
-        print("Evaluation results:\n", eval_results)
-        return
+        for ckpt in checkpoint_iterator(os.path.join(model_dir, "checkpoint")):
+            print("Evaluating checkpoint {}...".format(ckpt))
+            eval_results = estimator.evaluate(input_fn=eval_input_fn)
+            print("Evaluation results:\n", eval_results)
+            return
 
     else:
         print("Mode unknown. Doing nothing...")

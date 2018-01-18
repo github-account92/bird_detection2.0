@@ -56,6 +56,8 @@ def model_fn(features, labels, mode, params, config):
             name="max_over_time")
         flattened = tf.layers.flatten(maxed_over_time, name="flattened")
         logits = tf.layers.dense(flattened, 1, activation=None, name="logits")
+        if vis:
+            tf.summary.histogram("logits", logits)
 
         # if in prediction mode, this is all we need
         predictions = {"logits": logits,
