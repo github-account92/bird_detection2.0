@@ -10,8 +10,8 @@ from utils import checkpoint_iterator
 
 def run_birds(mode, data_config, model_config, model_dir,
               act, batchnorm,
-              adam_params, augment, batch_size, clipping, data_format, reg,
-              steps, vis):
+              adam_params, augment, batch_size, clipping, data_format,
+              label_smoothing, onedim, reg, steps, vis):
     """
     All of these parameters can be passed from est_cli. Please check
     that one for docs on what they are.
@@ -48,7 +48,9 @@ def run_birds(mode, data_config, model_config, model_dir,
               "adam_args": adam_params,
               "clipping": clipping,
               "vis": vis,
-              "reg": reg}
+              "reg": reg,
+              "onedim": onedim,
+              "label_smoothing": label_smoothing}
 
     # we set infrequent "permanent" checkpoints
     # we also disable the default SummarySaverHook IF profiling is requested
@@ -66,7 +68,7 @@ def run_birds(mode, data_config, model_config, model_dir,
     if mode == "train":
         def train_input_fn(): return input_fn(
             tfr_path, "train", freqs=freqs, batch_size=batch_size,
-            augment=augment)
+            augment=augment, onedim=onedim)
 
         logging_hook = tf.train.LoggingTensorHook(
             {"eval/accuracy": "eval/batch_accuracy"},
@@ -79,7 +81,7 @@ def run_birds(mode, data_config, model_config, model_dir,
         def eval_input_fn():
             return input_fn(
                 tfr_path, "dev", freqs=freqs, batch_size=batch_size,
-                augment=False)
+                augment=False, onedim=onedim)
 
         for ckpt in checkpoint_iterator(os.path.join(model_dir, "checkpoint")):
             print("Evaluating checkpoint {}...".format(ckpt))

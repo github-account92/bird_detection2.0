@@ -53,6 +53,14 @@ parser.add_argument("-G", "--augment",
                     action="store_true",
                     help="Use augmented training data. Will lead to a crash "
                          "if no such data is available!")
+parser.add_argument("-L", "--label_smoothing",
+                    type=float,
+                    default=0.0,
+                    help="Label smoothing to apply. Default: 0 (no "
+                         "smoothing).")
+parser.add_argument("-O", "--onedim",
+                    action="store_true",
+                    help="Use 1D convolutions instead of 2D.")
 parser.add_argument("-R", "--reg",
                     type=float,
                     default=0.0,
@@ -82,5 +90,6 @@ out = run_birds(mode=args.mode, data_config=args.data_config,
                 act=args.act, batchnorm=args.batchnorm,
                 adam_params=args.adam_params, augment=args.augment,
                 batch_size=args.batch_size, clipping=args.clipping,
-                data_format=args.data_format, reg=args.reg, steps=args.steps,
-                vis=args.vis)
+                data_format=args.data_format,
+                label_smoothing=args.label_smoothing, onedim=args.onedim,
+                reg=args.reg, steps=args.steps, vis=args.vis)
