@@ -28,7 +28,7 @@ def input_fn(data_path, subset, batch_size, freqs, augment, onedim):
 
     if subset == "train":
         data = data.shuffle(buffer_size=2**16)
-    data = data.map(parse_example, onedim)
+    data = data.map(lambda x: parse_example(x, onedim=onedim))
     if onedim:
         data = data.padded_batch(batch_size, ((freqs, -1), (1,)))
     else:

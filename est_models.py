@@ -274,7 +274,8 @@ def conv_layer(inputs, n_filters, size_filters, stride_filters, act,
                 data_format=data_format, name="conv")
         if batchnorm:
             conv = tf.layers.batch_normalization(
-                conv, axis=channel_axis, training=train, name="batch_norm")
+                conv, axis=channel_axis, training=train, name="batch_norm",
+                renorm=True)
             if act:
                 conv = act(conv)
         if vis:
