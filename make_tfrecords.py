@@ -83,7 +83,7 @@ def make_tfrecords(data_list, out_path, dev_inds, resample_rate=None,
                 continue
             if transform:
                 seq = transform(seq)
-            else:  # raw: Add fake height/channel axis
+            else:  # raw: Add fake channel axis
                 seq = seq[None, :]
 
             if ind in dev_inds:

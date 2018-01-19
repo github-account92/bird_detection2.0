@@ -49,10 +49,14 @@ def model_fn(features, labels, mode, params, config):
     # model input -> output
     with tf.variable_scope("model"):
         if data_format == "channels_last":
-            if onedim:
-                features = tf.transpose(features, [0, 2, 1])
-            else:
+            if onedim:  # b x 1 x t x 128
+                features = tf.transpose(features, [0, 1, 3, 2])
+            else:  # b x 128 x t x 1
                 features = tf.transpose(features, [0, 2, 3, 1])
+        elif onedim:  # channels_first but onedim b x 128 x 1 x t
+            features = tf.transpose(features, [0, 2, 1, 3])
+        # otherwise b x 1 x 128 x t
+
         pre_out, total_stride, all_layers = read_apply_model_config(
             model_config, features, act=act, batchnorm=use_bn,
             train=mode == tf.estimator.ModeKeys.TRAIN, data_format=data_format,
@@ -162,13 +166,13 @@ def read_apply_model_config(config_path, inputs, act, batchnorm, train,
     ALTERNATIVELY:
     pool,1,w_p,s_p for pooling, with size (w) and stride (s)
 
-    NOTE: This is for 2D convolutional models.
+    NOTE: This is for 1/2D convolutional models.
           The final layer should *not* be included since it's always the same
           and depends on the data (i.e. vocabulary size).
 
     Parameters:
         config_path: Path to the model config file.
-        inputs: 3D inputs to the model.
+        inputs: 4D inputs to the model.
         act: Activation function to apply in each layer/block.
         batchnorm: Bool, whether to use batch normalization.
         train: Bool or TF placeholder. Fed straight into batch normalization
@@ -178,7 +182,9 @@ def read_apply_model_config(config_path, inputs, act, batchnorm, train,
                      assumes that it's last.
         vis: Bool, whether to add histograms for layer activations.
         reg: Float, coefficient for regularizer for conv layers. 0 disables it.
-        onedim: Use 1D convolutions instead of 2D.
+        onedim: Use 1D convolutions instead of 2D. NOTE that this is
+                implemented via 2D convolutions; input needs to be in correct
+                shape.
 
     Returns:
         Output of the last layer/block, total stride of the network and a list
@@ -205,8 +211,8 @@ def read_apply_model_config(config_path, inputs, act, batchnorm, train,
                     data_format, vis, name=name, reg=reg, onedim=onedim)
             elif t == "pool":
                 if onedim:
-                    previous = tf.layers.max_pooling1d(
-                        previous, w_f, s_f, padding="same",
+                    previous = tf.layers.max_pooling2d(
+                        previous, (1, w_f), (1, s_f), padding="same",
                         data_format=data_format, name=name)
                 else:
                     previous = tf.layers.max_pooling2d(
@@ -245,7 +251,9 @@ def conv_layer(inputs, n_filters, size_filters, stride_filters, act,
         vis: Bool, whether to add a histogram for layer activations.
         name: Name of the layer (used for variable scope and summary).
         reg: Coefficient for regularizer; currently unused.
-        onedim: Use 1D convolutions instead of 2D.
+        onedim: Use 1D convolutions instead of 2D. NOTE that this is
+                implemented via 2D convolutions; input needs to be in correct
+                shape.
 
     Returns:
         Output of the layer and number of parameters.
@@ -261,15 +269,17 @@ def conv_layer(inputs, n_filters, size_filters, stride_filters, act,
 
     with tf.variable_scope(name):
         if onedim:
-            conv = tf.layers.conv1d(
-                inputs, filters=n_filters, kernel_size=size_filters,
-                strides=stride_filters, activation=None if batchnorm else act,
+            conv = tf.layers.conv2d(
+                inputs, filters=n_filters, kernel_size=(1, size_filters),
+                strides=(1, stride_filters),
+                activation=None if batchnorm else act,
                 use_bias=not batchnorm, padding="same",
                 data_format=data_format, name="conv")
         else:
             conv = tf.layers.conv2d(
                 inputs, filters=n_filters, kernel_size=size_filters,
-                strides=stride_filters, activation=None if batchnorm else act,
+                strides=stride_filters,
+                activation=None if batchnorm else act,
                 use_bias=not batchnorm, padding="same",
                 data_format=data_format, name="conv")
         if batchnorm:

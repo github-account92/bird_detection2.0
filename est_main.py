@@ -68,7 +68,7 @@ def run_birds(mode, data_config, model_config, model_dir,
     if mode == "train":
         def train_input_fn(): return input_fn(
             tfr_path, "train", freqs=freqs, batch_size=batch_size,
-            augment=augment, onedim=onedim)
+            augment=augment)
 
         logging_hook = tf.train.LoggingTensorHook(
             {"eval/accuracy": "eval/batch_accuracy"},
@@ -81,7 +81,7 @@ def run_birds(mode, data_config, model_config, model_dir,
         def eval_input_fn():
             return input_fn(
                 tfr_path, "dev", freqs=freqs, batch_size=batch_size,
-                augment=False, onedim=onedim)
+                augment=False)
 
         for ckpt in checkpoint_iterator(os.path.join(model_dir, "checkpoint")):
             print("Evaluating checkpoint {}...".format(ckpt))

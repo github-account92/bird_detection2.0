@@ -3,7 +3,7 @@ import os
 import tensorflow as tf
 
 
-def input_fn(data_path, subset, batch_size, freqs, augment, onedim):
+def input_fn(data_path, subset, batch_size, freqs, augment):
     """Builds an input function for tf.estimator.
     
     Parameters:
@@ -12,7 +12,6 @@ def input_fn(data_path, subset, batch_size, freqs, augment, onedim):
         batch_size: Duh.
         freqs: Size of the frequency axis we can expect.
         augment: Whether to use augmentation. Only used in train mode.
-        onedim: Prepare data for 1D convolutions instead of 2D.
     
     Returns:
         get_next op of iterator.
@@ -28,11 +27,8 @@ def input_fn(data_path, subset, batch_size, freqs, augment, onedim):
 
     if subset == "train":
         data = data.shuffle(buffer_size=2**16)
-    data = data.map(lambda x: parse_example(x, onedim=onedim))
-    if onedim:
-        data = data.padded_batch(batch_size, ((freqs, -1), (1,)))
-    else:
-        data = data.padded_batch(batch_size, ((1, freqs, -1), (1,)))
+    data = data.map(parse_example)
+    data = data.padded_batch(batch_size, ((1, freqs, -1), (1,)))
     if subset == "train":
         data = data.repeat()
     data = data.prefetch(4)
@@ -40,12 +36,11 @@ def input_fn(data_path, subset, batch_size, freqs, augment, onedim):
     return iterator.get_next()
 
 
-def parse_example(example_proto, onedim):
+def parse_example(example_proto):
     """Parse examples from a TFRecords file.
 
     Parameters:
         example_proto: The thing to parse.
-        onedim: Prepare data for 1D convolutions instead of 2D.
 
     Returns: 
         The parsed thing. Note: This is always channels_first!
@@ -61,7 +56,6 @@ def parse_example(example_proto, onedim):
     dense_seq = tf.reshape(tf.sparse_to_dense(
         sparse_seq.indices, sparse_seq.dense_shape, sparse_seq.values),
                            shape)
-    # add fake channel axis in any case
-    if not onedim:
-        dense_seq = tf.expand_dims(dense_seq, axis=0)
+    # add fake channel/height axis in any case
+    dense_seq = tf.expand_dims(dense_seq, axis=0)
     return dense_seq, tf.cast(parsed_features["label"], tf.int32)
