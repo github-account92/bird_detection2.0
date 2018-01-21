@@ -58,6 +58,9 @@ parser.add_argument("-L", "--label_smoothing",
                     default=0.0,
                     help="Label smoothing to apply. Default: 0 (no "
                          "smoothing).")
+parser.add_argument("-N", "--normalize",
+                    action="store_true",
+                    help="Normalize inputs to have mean 0 and variance 1.")
 parser.add_argument("-O", "--onedim",
                     action="store_true",
                     help="Use 1D convolutions instead of 2D.")
@@ -91,5 +94,6 @@ out = run_birds(mode=args.mode, data_config=args.data_config,
                 adam_params=args.adam_params, augment=args.augment,
                 batch_size=args.batch_size, clipping=args.clipping,
                 data_format=args.data_format,
-                label_smoothing=args.label_smoothing, onedim=args.onedim,
-                reg=args.reg, steps=args.steps, vis=args.vis)
+                label_smoothing=args.label_smoothing, normalize=args.normalize,
+                onedim=args.onedim, reg=args.reg, steps=args.steps,
+                vis=args.vis)

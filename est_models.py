@@ -29,6 +29,9 @@ def model_fn(features, labels, mode, params, config):
             reg: Float, coefficient for regularizer for conv layers. 0 disables
                  it.
             onedim: Use 1D convolution.
+            label_smoothing: Float, amount of label smoothing to use (0 to 
+                             disable)
+            normalize: Normalize inputs to mean 0 and variance 1.
         config: RunConfig object passed through from Estimator.
 
     Returns:
@@ -45,9 +48,15 @@ def model_fn(features, labels, mode, params, config):
     reg = params["reg"]
     onedim = params["onedim"]
     label_smoothing = params["label_smoothing"]
+    normalize = params["normalize"]
 
     # model input -> output
     with tf.variable_scope("model"):
+        if normalize:
+            means, variances = tf.nn.moments(features, axes=[2, 3],
+                                             keep_dims=True)
+            features = (features - means) / variances
+
         if data_format == "channels_last":
             if onedim:  # b x 1 x t x 128
                 features = tf.transpose(features, [0, 1, 3, 2])

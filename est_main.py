@@ -11,7 +11,7 @@ from utils import checkpoint_iterator
 def run_birds(mode, data_config, model_config, model_dir,
               act, batchnorm,
               adam_params, augment, batch_size, clipping, data_format,
-              label_smoothing, onedim, reg, steps, vis):
+              label_smoothing, normalize, onedim, reg, steps, vis):
     """
     All of these parameters can be passed from est_cli. Please check
     that one for docs on what they are.
