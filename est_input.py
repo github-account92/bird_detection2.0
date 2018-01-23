@@ -23,10 +23,15 @@ def input_fn(data_path, subset, batch_size, freqs, augment):
             paths.append(aug_path)
         else:
             raise ValueError("Augmented data requested but not found.")
+        # bonus
+        aug_path2 = data_path + "_more_augment.tfrecords"
+        if os.path.exists(aug_path2):
+            paths.append(aug_path2)
+
     data = tf.data.TFRecordDataset(paths)
 
     if subset == "train":
-        data = data.shuffle(buffer_size=2**16)
+        data = data.shuffle(buffer_size=2**18)
     data = data.map(parse_example)
     data = data.padded_batch(batch_size, ((1, freqs, -1), (1,)))
     if subset == "train":

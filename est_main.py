@@ -50,7 +50,8 @@ def run_birds(mode, data_config, model_config, model_dir,
               "vis": vis,
               "reg": reg,
               "onedim": onedim,
-              "label_smoothing": label_smoothing}
+              "label_smoothing": label_smoothing,
+              "normalize": normalize}
 
     # we set infrequent "permanent" checkpoints
     # we also disable the default SummarySaverHook IF profiling is requested
