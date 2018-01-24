@@ -118,6 +118,8 @@ def run_birds(mode, data_config, model_config, model_dir,
                 predictions_repacked["all_layers"] = layers
                 for k in ["flattened", "logits", "probabilities", "classes"]:
                     predictions_repacked[k] = predictions[k]
+                predictions_repacked["label"] = data[1]
+                predictions_repacked["file"] = data[0]
                 yield predictions_repacked
         return gen()
 
