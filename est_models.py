@@ -32,6 +32,7 @@ def model_fn(features, labels, mode, params, config):
             label_smoothing: Float, amount of label smoothing to use (0 to 
                              disable)
             normalize: Normalize inputs to mean 0 and variance 1.
+            renorm: Use batch renormalization.
         config: RunConfig object passed through from Estimator.
 
     Returns:
@@ -49,6 +50,7 @@ def model_fn(features, labels, mode, params, config):
     onedim = params["onedim"]
     label_smoothing = params["label_smoothing"]
     normalize = params["normalize"]
+    renorm = params["renorm"]
 
     # model input -> output
     with tf.variable_scope("model"):
@@ -69,7 +71,7 @@ def model_fn(features, labels, mode, params, config):
         pre_out, total_stride, all_layers = read_apply_model_config(
             model_config, features, act=act, batchnorm=use_bn,
             train=mode == tf.estimator.ModeKeys.TRAIN, data_format=data_format,
-            vis=vis, reg=reg, onedim=onedim)
+            vis=vis, reg=reg, onedim=onedim, renorm=renorm)
         maxed_over_time = tf.reduce_max(
             pre_out, axis=-1 if data_format == "channels_first" else -2,
             name="max_over_time")
@@ -161,7 +163,7 @@ def model_fn(features, labels, mode, params, config):
 # Helper functions for building inference models.
 ###############################################################################
 def read_apply_model_config(config_path, inputs, act, batchnorm, train,
-                            data_format, vis, reg, onedim):
+                            data_format, vis, reg, onedim, renorm):
     """Read a model config file and apply it to an input.
 
     A config file is a csv file where each line stands for a layer or a whole
@@ -195,6 +197,7 @@ def read_apply_model_config(config_path, inputs, act, batchnorm, train,
         onedim: Use 1D convolutions instead of 2D. NOTE that this is
                 implemented via 2D convolutions; input needs to be in correct
                 shape.
+        renorm: Use batch renormalization.
 
     Returns:
         Output of the last layer/block, total stride of the network and a list
@@ -218,7 +221,8 @@ def read_apply_model_config(config_path, inputs, act, batchnorm, train,
             if t == "layer":
                 previous, pars = conv_layer(
                     previous, n_f, w_f, s_f, act, batchnorm, train,
-                    data_format, vis, name=name, reg=reg, onedim=onedim)
+                    data_format, vis, name=name, reg=reg, onedim=onedim,
+                    renorm=renorm)
             elif t == "pool":
                 if onedim:
                     previous = tf.layers.max_pooling2d(
@@ -242,7 +246,8 @@ def read_apply_model_config(config_path, inputs, act, batchnorm, train,
 
 
 def conv_layer(inputs, n_filters, size_filters, stride_filters, act,
-               batchnorm, train, data_format, vis, name, reg, onedim):
+               batchnorm, train, data_format, vis, name, reg, onedim,
+               renorm):
     """Build and apply a 1D/2D convolutional layer.
 
     Parameters:
@@ -264,6 +269,7 @@ def conv_layer(inputs, n_filters, size_filters, stride_filters, act,
         onedim: Use 1D convolutions instead of 2D. NOTE that this is
                 implemented via 2D convolutions; input needs to be in correct
                 shape.
+        renorm: Use batch renormalization
 
     Returns:
         Output of the layer and number of parameters.
@@ -295,7 +301,7 @@ def conv_layer(inputs, n_filters, size_filters, stride_filters, act,
         if batchnorm:
             conv = tf.layers.batch_normalization(
                 conv, axis=channel_axis, training=train, name="batch_norm",
-                renorm=True)
+                renorm=renorm)
             if act:
                 conv = act(conv)
         if vis:

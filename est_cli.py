@@ -43,6 +43,10 @@ parser.add_argument("-C", "--clipping",
                     default=0.0,
                     help="Global norm to clip gradients to. Default: 0 (no "
                          "clipping).")
+parser.add_argument("-E", "--renorm",
+                    action="store_true",
+                    help="Use batch renormalization (only has an effect if "
+                         "batch norm is used).")
 parser.add_argument("-F", "--data_format",
                     default="channels_first",
                     choices=["channels_first", "channels_last"],
@@ -95,5 +99,5 @@ out = run_birds(mode=args.mode, data_config=args.data_config,
                 batch_size=args.batch_size, clipping=args.clipping,
                 data_format=args.data_format,
                 label_smoothing=args.label_smoothing, normalize=args.normalize,
-                onedim=args.onedim, reg=args.reg, steps=args.steps,
-                vis=args.vis)
+                onedim=args.onedim, reg=args.reg, renorm=args.renorm,
+                steps=args.steps, vis=args.vis)

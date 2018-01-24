@@ -12,7 +12,7 @@ from utils import checkpoint_iterator
 def run_birds(mode, data_config, model_config, model_dir,
               act, batchnorm,
               adam_params, augment, batch_size, clipping, data_format,
-              label_smoothing, normalize, onedim, reg, steps, vis):
+              label_smoothing, normalize, onedim, reg, renorm, steps, vis):
     """
     All of these parameters can be passed from est_cli. Please check
     that one for docs on what they are.
@@ -52,7 +52,8 @@ def run_birds(mode, data_config, model_config, model_dir,
               "reg": reg,
               "onedim": onedim,
               "label_smoothing": label_smoothing,
-              "normalize": normalize}
+              "normalize": normalize,
+              "renorm": renorm}
 
     # we set infrequent "permanent" checkpoints
     # we also disable the default SummarySaverHook IF profiling is requested
@@ -104,7 +105,7 @@ def run_birds(mode, data_config, model_config, model_dir,
 
         def gen():
             for data, predictions in zip(
-                    dev_data, estimator.predict(input_fn=input_fn)):
+                    dev_data, estimator.predict(input_fn=eval_input_fn)):
                 predictions_repacked = dict()
 
                 # construct a sorted list of layers and their activations, with
