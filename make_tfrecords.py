@@ -73,6 +73,7 @@ def make_tfrecords(data_list, out_path, dev_inds, resample_rate=None,
                     int64_list=tf.train.Int64List(value=[_label]))}))
         writer.write(tfex.SerializeToString())
 
+    dev_inds = set(dev_inds)
     with tf.python_io.TFRecordWriter(
                     out_path + "_train.tfrecords") as train_writer, \
             tf.python_io.TFRecordWriter(

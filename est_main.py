@@ -1,8 +1,9 @@
 import os
 
+import numpy as np
 import tensorflow as tf
 
-from data_utils import read_data_config
+from data_utils import read_data_config, make_labeled_data_list
 from est_input import input_fn
 from est_models import model_fn
 from utils import checkpoint_iterator
@@ -90,6 +91,51 @@ def run_birds(mode, data_config, model_config, model_dir,
             print("Evaluation results:\n", eval_results)
         return
 
+    elif mode == "predict":
+        def eval_input_fn():
+            return input_fn(
+                tfr_path, "dev", freqs=freqs, batch_size=batch_size,
+                augment=False)
+
+        orig_data = make_labeled_data_list(
+            config_dict["data_dir"], config_dict["datasets"])
+        dev_inds = set(np.load(config_dict["dev_inds"]))
+        dev_data = [d for i, d in enumerate(orig_data) if i in dev_inds]
+
+        def gen():
+            for data, predictions in zip(
+                    dev_data, estimator.predict(input_fn=input_fn)):
+                predictions_repacked = dict()
+
+                # construct a sorted list of layers and their activations, with
+                # input and front
+                layers = [(n, a) for (n, a) in predictions.items() if
+                          leading_string(n) in ["layer", "pool"]]
+                layers.sort(key=lambda tup: trailing_num(tup[0]))
+                layers.insert(0, ("input", predictions["input"]))
+
+                predictions_repacked["all_layers"] = layers
+                for k in ["flattened", "logits", "probabilities", "classes"]:
+                    predictions_repacked[k] = predictions[k]
+                yield predictions_repacked
+        return gen()
+
     else:
         print("Mode unknown. Doing nothing...")
         return
+
+
+###############################################################################
+# HELPERS
+###############################################################################
+def leading_string(string):
+    """Splits e.g. "layer104" into "layer", "104" an returns "layer"."""
+    alpha = string.rstrip('0123456789')
+    return alpha
+
+
+def trailing_num(string):
+    """Splits e.g. "layer104" into "layer", "104" an returns int("104")."""
+    alpha = string.rstrip('0123456789')
+    num = string[len(alpha):]
+    return int(num)

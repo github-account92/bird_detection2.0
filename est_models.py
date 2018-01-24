@@ -85,7 +85,8 @@ def model_fn(features, labels, mode, params, config):
                        "classes": tf.cast(
                            tf.greater_equal(logits, 0), tf.int32,
                            name="classes"),
-                       "input": features}
+                       "input": features,
+                       "flattened": flattened}
         for name, act in all_layers:
             predictions[name] = act
         if mode == tf.estimator.ModeKeys.PREDICT:
