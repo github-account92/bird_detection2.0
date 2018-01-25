@@ -12,7 +12,8 @@ from utils import checkpoint_iterator
 def run_birds(mode, data_config, model_config, model_dir,
               act, batchnorm,
               adam_params, augment, batch_size, clipping, data_format,
-              label_smoothing, normalize, onedim, reg, renorm, steps, vis):
+              label_smoothing, normalize, onedim, reg, renorm, steps,
+              use_avg, vis):
     """
     All of these parameters can be passed from est_cli. Please check
     that one for docs on what they are.
@@ -53,7 +54,8 @@ def run_birds(mode, data_config, model_config, model_dir,
               "onedim": onedim,
               "label_smoothing": label_smoothing,
               "normalize": normalize,
-              "renorm": renorm}
+              "renorm": renorm,
+              "use_avg": use_avg}
 
     # we set infrequent "permanent" checkpoints
     # we also disable the default SummarySaverHook IF profiling is requested

@@ -33,6 +33,7 @@ def model_fn(features, labels, mode, params, config):
                              disable)
             normalize: Normalize inputs to mean 0 and variance 1.
             renorm: Use batch renormalization.
+            use_avg: Average-pool at the end instead of max-pool.
         config: RunConfig object passed through from Estimator.
 
     Returns:
@@ -51,6 +52,7 @@ def model_fn(features, labels, mode, params, config):
     label_smoothing = params["label_smoothing"]
     normalize = params["normalize"]
     renorm = params["renorm"]
+    use_avg = params["use_avg"]
 
     # model input -> output
     with tf.variable_scope("model"):
@@ -72,10 +74,11 @@ def model_fn(features, labels, mode, params, config):
             model_config, features, act=act, batchnorm=use_bn,
             train=mode == tf.estimator.ModeKeys.TRAIN, data_format=data_format,
             vis=vis, reg=reg, onedim=onedim, renorm=renorm)
-        maxed_over_time = tf.reduce_max(
+        reduce_fun = tf.reduce_mean if use_avg else tf.reduce_max
+        reduce_over_time = reduce_fun(
             pre_out, axis=-1 if data_format == "channels_first" else -2,
-            name="max_over_time")
-        flattened = tf.layers.flatten(maxed_over_time, name="flattened")
+            name="reduce_over_time")
+        flattened = tf.layers.flatten(reduce_over_time, name="flattened")
         logits = tf.layers.dense(flattened, 1, activation=None, name="logits")
         if vis:
             tf.summary.histogram("logits", logits)

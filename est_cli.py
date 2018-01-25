@@ -78,6 +78,10 @@ parser.add_argument("-S", "--steps",
                     default=50000,
                     help="Number of training steps to take. Default: 50000. "
                          "Ignored if doing prediction or evaluation.")
+parser.add_argument("-U", "--use_avg",
+                    action="store_true",
+                    help="Use average pooling over time at the end instead of "
+                         "max pooling.")
 parser.add_argument("-V", "--vis",
                     type=int,
                     default=100,
@@ -100,4 +104,4 @@ out = run_birds(mode=args.mode, data_config=args.data_config,
                 data_format=args.data_format,
                 label_smoothing=args.label_smoothing, normalize=args.normalize,
                 onedim=args.onedim, reg=args.reg, renorm=args.renorm,
-                steps=args.steps, vis=args.vis)
+                steps=args.steps, use_avg=args.use_avg, vis=args.vis)
