@@ -124,7 +124,7 @@ def model_fn(features, labels, mode, params, config):
         if vis:
             with tf.name_scope("visualization"):
                 for g, v in grads_and_vars:
-                    if v.name.find("kernel") >= 0 or v.name.find("bias"):
+                    if v.name.find("kernel") >= 0 or v.name.find("bias") >= 0:
                         tf.summary.scalar(v.name + "gradient_norm", tf.norm(g))
                 tf.summary.scalar("global_gradient_norm", glob_grad_norm)
 
