@@ -102,6 +102,11 @@ def model_fn(features, labels, mode, params, config):
     cross_ent = tf.losses.sigmoid_cross_entropy(
         logits=logits, multi_class_labels=labels,
         label_smoothing=label_smoothing)
+    if reg:
+        tf.summary.scalar("loss_no_reg", cross_ent)
+        reg_loss = reg * tf.losses.get_regularization_loss()
+        tf.summary.scalar("loss_reg", reg_loss)
+        cross_ent += reg_loss
     with tf.variable_scope("eval", reuse=True):
         acc = tf.reduce_mean(
             tf.cast(tf.equal(labels, predictions["classes"]), tf.float32),
@@ -293,14 +298,16 @@ def conv_layer(inputs, n_filters, size_filters, stride_filters, act,
                 strides=(1, stride_filters),
                 activation=None if batchnorm else act,
                 use_bias=not batchnorm, padding="same",
-                data_format=data_format, name="conv")
+                data_format=data_format, name="conv",
+                kernel_regularizer=lambda x: tf.norm(x) if reg else None)
         else:
             conv = tf.layers.conv2d(
                 inputs, filters=n_filters, kernel_size=size_filters,
                 strides=stride_filters,
                 activation=None if batchnorm else act,
                 use_bias=not batchnorm, padding="same",
-                data_format=data_format, name="conv")
+                data_format=data_format, name="conv",
+                kernel_regularizer=lambda x: tf.norm(x) if reg else None)
         if batchnorm:
             conv = tf.layers.batch_normalization(
                 conv, axis=channel_axis, training=train, name="batch_norm",
