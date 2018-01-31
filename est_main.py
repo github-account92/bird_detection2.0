@@ -13,7 +13,7 @@ def run_birds(mode, data_config, model_config, model_dir,
               act, batchnorm,
               adam_params, augment, batch_size, clipping, data_format,
               label_smoothing, normalize, onedim, reg, renorm, steps,
-              use_avg, vis):
+              threshold, use_avg, vis):
     """
     All of these parameters can be passed from est_cli. Please check
     that one for docs on what they are.
@@ -73,7 +73,7 @@ def run_birds(mode, data_config, model_config, model_dir,
     if mode == "train":
         def train_input_fn(): return input_fn(
             tfr_path, "train", freqs=freqs, batch_size=batch_size,
-            augment=augment)
+            augment=augment, threshold=threshold)
 
         logging_hook = tf.train.LoggingTensorHook(
             {"eval/accuracy": "eval/batch_accuracy"},
@@ -86,7 +86,7 @@ def run_birds(mode, data_config, model_config, model_dir,
         def eval_input_fn():
             return input_fn(
                 tfr_path, "dev", freqs=freqs, batch_size=batch_size,
-                augment=False)
+                augment=False, threshold=threshold)
 
         for ckpt in checkpoint_iterator(os.path.join(model_dir, "checkpoint")):
             print("Evaluating checkpoint {}...".format(ckpt))
@@ -98,7 +98,7 @@ def run_birds(mode, data_config, model_config, model_dir,
         def eval_input_fn():
             return input_fn(
                 tfr_path, "dev", freqs=freqs, batch_size=batch_size,
-                augment=False)
+                augment=False, threshold=threshold)
 
         orig_data = make_labeled_data_list(
             config_dict["data_dir"], config_dict["datasets"])

@@ -3,7 +3,7 @@ import os
 import tensorflow as tf
 
 
-def input_fn(data_path, subset, batch_size, freqs, augment):
+def input_fn(data_path, subset, batch_size, freqs, augment, threshold):
     """Builds an input function for tf.estimator.
     
     Parameters:
@@ -12,6 +12,7 @@ def input_fn(data_path, subset, batch_size, freqs, augment):
         batch_size: Duh.
         freqs: Size of the frequency axis we can expect.
         augment: Whether to use augmentation. Only used in train mode.
+        threshold: If set, threshold at 80db below maximum for each sequence.
     
     Returns:
         get_next op of iterator.
@@ -32,7 +33,7 @@ def input_fn(data_path, subset, batch_size, freqs, augment):
 
     if subset == "train":
         data = data.shuffle(buffer_size=2**18)
-    data = data.map(parse_example)
+    data = data.map(lambda x: parse_example(x, threshold))
     data = data.padded_batch(batch_size, ((1, freqs, -1), (1,)))
     if subset == "train":
         data = data.repeat()
@@ -41,11 +42,12 @@ def input_fn(data_path, subset, batch_size, freqs, augment):
     return iterator.get_next()
 
 
-def parse_example(example_proto):
+def parse_example(example_proto, threshold):
     """Parse examples from a TFRecords file.
 
     Parameters:
         example_proto: The thing to parse.
+        threshold: See above.
 
     Returns: 
         The parsed thing. Note: This is always channels_first!
@@ -63,4 +65,7 @@ def parse_example(example_proto):
                            shape)
     # add fake channel/height axis in any case
     dense_seq = tf.expand_dims(dense_seq, axis=0)
+    if threshold:
+        dense_seq = tf.maximum(
+            dense_seq, tf.reduce_max(dense_seq) - 8.*tf.log(10.))
     return dense_seq, tf.cast(parsed_features["label"], tf.int32)
